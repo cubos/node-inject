@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { AsyncLocalStorage } from "async_hooks";
 
 import { GlobalContext } from "./global-context";
@@ -32,7 +33,6 @@ export function registerService<T extends ServiceType>(lifetime: ServiceLifetime
     throw new Error(`Service '${type.name}' is already registered`);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   globalContext.setService(type, { type, factory: () => new type(...(ctorArgs as unknown[])), lifetime });
 }
 
@@ -45,7 +45,6 @@ export function useService<T extends ServiceType>(type: T): InstanceType<T> {
 
   switch (service.lifetime) {
     case "transient":
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return createServiceInstance(service) as InstanceType<T>;
 
     case "scoped": {
@@ -58,7 +57,6 @@ export function useService<T extends ServiceType>(type: T): InstanceType<T> {
       const stored = scopeContext.getServiceInstance(type) as InstanceType<T>;
 
       if (stored) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return stored;
       }
 
@@ -66,13 +64,11 @@ export function useService<T extends ServiceType>(type: T): InstanceType<T> {
 
       scopeContext.setServiceInstance(type, newInstance);
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return newInstance;
     }
 
     case "singleton": {
       if (globalContext.hasSingleton(type)) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return globalContext.getSingleton(type) as InstanceType<T>;
       }
 
@@ -80,7 +76,6 @@ export function useService<T extends ServiceType>(type: T): InstanceType<T> {
 
       globalContext.setSingleton(type, newInstance);
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return newInstance;
     }
 
