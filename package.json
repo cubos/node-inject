@@ -1,7 +1,7 @@
 {
   "name": "@cubos/inject",
   "version": "0.0.0",
-  "description": "",
+  "description": "Service injection library agnostic of framework and inspired by ASP.NET",
   "main": "src/index.ts",
   "scripts": {
     "test": "jest",
