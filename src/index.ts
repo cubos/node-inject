@@ -54,10 +54,8 @@ export function useService<T extends ServiceType>(type: T): InstanceType<T> {
         throw new Error(`Scoped service '${type.name}' can't be used outside a scope`);
       }
 
-      const stored = scopeContext.getServiceInstance(type) as InstanceType<T>;
-
-      if (stored) {
-        return stored;
+      if (scopeContext.hasServiceInstance(type)) {
+        return scopeContext.getServiceInstance(type) as InstanceType<T>;
       }
 
       const newInstance = createServiceInstance(service) as InstanceType<T>;
@@ -80,7 +78,7 @@ export function useService<T extends ServiceType>(type: T): InstanceType<T> {
     }
 
     default:
-      throw new Error();
+      throw new Error(`Unknown lifetime "${service.lifetime}"`);
   }
 }
 

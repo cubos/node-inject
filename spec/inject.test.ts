@@ -10,13 +10,8 @@ import {
 } from "../src";
 
 describe("env", () => {
-  beforeEach(() => {
-    pushInjectionContext();
-  });
-
-  afterEach(() => {
-    popInjectionContext();
-  });
+  beforeEach(pushInjectionContext);
+  afterEach(popInjectionContext);
 
   it("throws when getting a service that wasn't registered", () => {
     class TestService {}
@@ -154,7 +149,7 @@ describe("env", () => {
     expect(() => registerScopedValue("foo", value1)).toThrowError("Scoped value 'foo' can't be registered outside a scope");
   });
 
-  it("can pop value context to release singleton instances", () => {
+  it("can pop global context to release singleton instances", () => {
     let constructorCalledTimes = 0;
 
     class TestService {
@@ -204,5 +199,99 @@ describe("env", () => {
     expect(id3).toBe(id4);
 
     expect(constructorCalledTimes).toBe(3);
+  });
+
+  it("can push and pop global context to isolate values", () => {
+    registerValue("foo", 123);
+
+    expect(useValue("foo")).toBe(123);
+
+    pushInjectionContext();
+    try {
+      registerValue("bar", 456);
+      expect(useValue("foo")).toBe(123);
+      expect(useValue("bar")).toBe(456);
+    } finally {
+      popInjectionContext();
+    }
+
+    expect(() => useValue("bar")).toThrowError("Value 'bar' is not registered");
+  });
+
+  it("must pop once for every push", () => {
+    popInjectionContext();
+    try {
+      expect(() => popInjectionContext()).toThrowError("Can't pop injection context");
+    } finally {
+      pushInjectionContext();
+    }
+  });
+
+  it("disallows registering values twice", () => {
+    registerValue("foo", 123);
+    expect(() => registerValue("foo", 456)).toThrowError("Value 'foo' is already registered");
+    expect(useValue("foo")).toBe(123);
+  });
+
+  it("disallows registering services twice", () => {
+    class SomeService {}
+
+    registerService("singleton", SomeService);
+    expect(() => registerService("scoped", SomeService)).toThrowError("Service 'SomeService' is already registered");
+    expect(useService(SomeService)).toBeInstanceOf(SomeService);
+  });
+
+  it("allows two services with the same name", () => {
+    const service1 = (() => {
+      return class Service {
+        public id = 1;
+      };
+    })();
+
+    const service2 = (() => {
+      return class Service {
+        public id = 2;
+      };
+    })();
+
+    expect(service1.name).toBe("Service");
+    expect(service2.name).toBe("Service");
+
+    registerService("singleton", service1);
+    registerService("singleton", service2);
+
+    expect(useService(service1)).toBeInstanceOf(service1);
+    expect(useService(service1)).not.toBeInstanceOf(service2);
+    expect(useService(service1).id).toBe(1);
+
+    expect(useService(service2)).toBeInstanceOf(service2);
+    expect(useService(service2)).not.toBeInstanceOf(service1);
+    expect(useService(service2).id).toBe(2);
+  });
+
+  it("detects cyclic dependency on service construction", () => {
+    class A {
+      constructor() {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        useService(B);
+      }
+    }
+    class B {
+      constructor() {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        useService(C);
+      }
+    }
+    class C {
+      constructor() {
+        useService(A);
+      }
+    }
+
+    registerService("transient", A);
+    registerService("transient", B);
+    registerService("transient", C);
+
+    expect(() => useService(A)).toThrowError("Cyclic service dependency on constructor: 'A' -> 'B' -> 'C' -> 'A'");
   });
 });
