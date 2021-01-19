@@ -104,11 +104,13 @@ export function useValue<NameT extends keyof UseValueTypeMapInternal>(name: Name
   const scopeContext = scopeContextAsyncStorage.getStore();
 
   if (scopeContext?.hasValue(name)) {
-    return scopeContext.getValue(name);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    return scopeContext.getValue(name) as UseValueTypeMapInternal[NameT];
   }
 
   if (globalContext.hasValue(name)) {
-    return globalContext.getValue(name);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    return globalContext.getValue(name) as UseValueTypeMapInternal[NameT];
   }
 
   throw new Error(`Value '${name}' is not registered`);
