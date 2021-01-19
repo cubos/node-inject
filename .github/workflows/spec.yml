@@ -1,0 +1,13 @@
+name: "spec"
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - run: npm install
+      - run: npx tsc -noEmit
+      - run: npm run eslint:check
+      - run: npm test

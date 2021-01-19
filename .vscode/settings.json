@@ -1,0 +1,9 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "files.insertFinalNewline": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": false
+  },
+}
