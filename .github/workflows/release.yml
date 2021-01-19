@@ -14,7 +14,10 @@ jobs:
       - run: |
           npm install -g json && json -I -f package.json -e '
             this.version = "${{ github.ref }}".replace("refs/tags/", "");
+            this.main = "dist/src/index.js";
+            this.types = "dist/src/index.d.ts";
           '
+      - run: npm run build
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
