@@ -154,9 +154,9 @@ The goal of this library is to make dependency injection during unit tests easy.
 2. Create your controllers and routes consuming those services with `useService`.
 3. Create your application entry point file. This is the only file that won't be tested. It should register all services and start the application server.
 4. Create a test setup file. Assuming Jest, you should pass this file as `setupFilesAfterEnv` on jest config. It should have a `beforeAll` that can register some default mock or services/values that all tests can use. Then it must call the following:
-  ```typescript
-  beforeEach(pushInjectionContext);
-  afterEach(popInjectionContext);
-  ```
-  This pair of functions are responsible for creating an isolated context for each test.
+
+       beforeEach(pushInjectionContext);
+       afterEach(popInjectionContext);
+
+    This pair of functions are responsible for creating an isolated context for each test.
 5. Write your tests. Each test can `registerService` its own mocks as needed, not need to cleanup. After each test `popInjectionContext` will take care of eliminating anything this test registered.
