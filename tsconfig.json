@@ -10,5 +10,6 @@
   "files": [
     "src/index.ts",
     "src/use.d.ts",
+    "spec/inject.test.ts",
   ]
 }
