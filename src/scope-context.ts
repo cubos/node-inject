@@ -1,3 +1,5 @@
+import { AsyncLocalStorage } from "async_hooks";
+
 export class ScopeContext {
   constructor(public readonly parent?: ScopeContext) {}
 
@@ -28,4 +30,16 @@ export class ScopeContext {
   setValue(name: string, value: unknown) {
     this.values.set(name, value);
   }
+}
+
+const scopeContextAsyncStorage = new AsyncLocalStorage<ScopeContext>();
+
+export function getCurrentScope() {
+  return scopeContextAsyncStorage.getStore();
+}
+
+export function setupScope<T>(fn: () => T) {
+  const scopeContext = new ScopeContext(getCurrentScope());
+
+  return scopeContextAsyncStorage.run(scopeContext, fn);
 }

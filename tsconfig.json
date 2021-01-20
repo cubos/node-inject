@@ -6,5 +6,9 @@
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true
-  }
+  },
+  "files": [
+    "src/index.ts",
+    "src/use.d.ts",
+  ]
 }

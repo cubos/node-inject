@@ -45,3 +45,21 @@ export class GlobalContext {
     this.values.set(name, value);
   }
 }
+
+let globalContext = new GlobalContext();
+
+export function pushInjectionContext() {
+  globalContext = new GlobalContext(globalContext);
+}
+
+export function popInjectionContext() {
+  if (!globalContext.parent) {
+    throw new Error("Can't pop injection context");
+  }
+
+  globalContext = globalContext.parent;
+}
+
+export function getGlobalContext() {
+  return globalContext;
+}
