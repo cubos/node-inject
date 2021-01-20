@@ -1,13 +1,4 @@
-import {
-  popInjectionContext,
-  pushInjectionContext,
-  registerValue,
-  registerScopedValue,
-  registerService,
-  setupScope,
-  useValue,
-  useService,
-} from "../src";
+import { popInjectionContext, pushInjectionContext, registerValue, registerScopedValue, registerService, setupScope, use } from "../src";
 
 describe("env", () => {
   beforeEach(pushInjectionContext);
@@ -16,7 +7,7 @@ describe("env", () => {
   it("throws when getting a service that wasn't registered", () => {
     class TestService {}
 
-    expect(() => useService(TestService)).toThrowError("Service 'TestService' is not registered");
+    expect(() => use(TestService)).toThrowError("Service 'TestService' is not registered");
   });
 
   it("registers a service as singleton", () => {
@@ -34,12 +25,12 @@ describe("env", () => {
 
     expect(constructorCalledTimes).toBe(0);
 
-    const instance1 = useService(TestService);
+    const instance1 = use(TestService);
 
     expect(instance1).toBeInstanceOf(TestService);
     expect(constructorCalledTimes).toBe(1);
 
-    const instance2 = useService(TestService);
+    const instance2 = use(TestService);
 
     expect(instance2).toBeInstanceOf(TestService);
     expect(constructorCalledTimes).toBe(1);
@@ -63,12 +54,12 @@ describe("env", () => {
 
     expect(constructorCalledTimes).toBe(0);
 
-    const instance1 = useService(TestService);
+    const instance1 = use(TestService);
 
     expect(instance1).toBeInstanceOf(TestService);
     expect(constructorCalledTimes).toBe(1);
 
-    const instance2 = useService(TestService);
+    const instance2 = use(TestService);
 
     expect(instance2).toBeInstanceOf(TestService);
     expect(constructorCalledTimes).toBe(2);
@@ -92,13 +83,13 @@ describe("env", () => {
 
     expect(constructorCalledTimes).toBe(0);
 
-    expect(() => useService(TestService)).toThrowError("Scoped service 'TestService' can't be used outside a scope");
+    expect(() => use(TestService)).toThrowError("Scoped service 'TestService' can't be used outside a scope");
 
     setupScope(() => {
       expect(constructorCalledTimes).toBe(0);
 
-      const instance1 = useService(TestService);
-      const instance2 = useService(TestService);
+      const instance1 = use(TestService);
+      const instance2 = use(TestService);
 
       expect(constructorCalledTimes).toBe(1);
       expect(instance1).toBeInstanceOf(TestService);
@@ -107,7 +98,7 @@ describe("env", () => {
       expect(instance1).toBe(instance2);
 
       setupScope(() => {
-        const instance3 = useService(TestService);
+        const instance3 = use(TestService);
 
         expect(instance1).toBe(instance3);
       });
@@ -116,7 +107,7 @@ describe("env", () => {
     setupScope(() => {
       expect(constructorCalledTimes).toBe(1);
 
-      useService(TestService);
+      use(TestService);
 
       expect(constructorCalledTimes).toBe(2);
     });
@@ -127,7 +118,8 @@ describe("env", () => {
 
     registerValue("foo", value);
 
-    expect(useValue("foo")).toBe(value);
+    expect(use("foo")).toBe(value);
+    expect(use.foo).toBe(value);
   });
 
   it("registers a scoped value", () => {
@@ -137,13 +129,15 @@ describe("env", () => {
     setupScope(() => {
       registerScopedValue("foo", value1);
 
-      expect(useValue("foo")).toBe(value1);
+      expect(use("foo")).toBe(value1);
+      expect(use.foo).toBe(value1);
     });
 
     setupScope(() => {
       registerScopedValue("foo", value2);
 
-      expect(useValue("foo")).toBe(value2);
+      expect(use("foo")).toBe(value2);
+      expect(use.foo).toBe(value2);
     });
 
     expect(() => registerScopedValue("foo", value1)).toThrowError("Scoped value 'foo' can't be registered outside a scope");
@@ -168,23 +162,23 @@ describe("env", () => {
 
     pushInjectionContext();
     try {
-      id1 = useService(TestService).id;
+      id1 = use(TestService).id;
     } finally {
       popInjectionContext();
     }
 
     pushInjectionContext();
     try {
-      id2 = useService(TestService).id;
+      id2 = use(TestService).id;
     } finally {
       popInjectionContext();
     }
 
-    const id3 = useService(TestService).id;
+    const id3 = use(TestService).id;
 
     pushInjectionContext();
     try {
-      id4 = useService(TestService).id;
+      id4 = use(TestService).id;
     } finally {
       popInjectionContext();
     }
@@ -204,18 +198,19 @@ describe("env", () => {
   it("can push and pop global context to isolate values", () => {
     registerValue("foo", 123);
 
-    expect(useValue("foo")).toBe(123);
+    expect(use("foo")).toBe(123);
 
     pushInjectionContext();
     try {
       registerValue("bar", 456);
-      expect(useValue("foo")).toBe(123);
-      expect(useValue("bar")).toBe(456);
+      expect(use("foo")).toBe(123);
+      expect(use("bar")).toBe(456);
     } finally {
       popInjectionContext();
     }
 
-    expect(() => useValue("bar")).toThrowError("Value 'bar' is not registered");
+    expect(() => use("bar")).toThrowError("Value 'bar' is not registered");
+    expect(() => use.bar).toThrowError("Value 'bar' is not registered");
   });
 
   it("must pop once for every push", () => {
@@ -230,7 +225,7 @@ describe("env", () => {
   it("disallows registering values twice", () => {
     registerValue("foo", 123);
     expect(() => registerValue("foo", 456)).toThrowError("Value 'foo' is already registered");
-    expect(useValue("foo")).toBe(123);
+    expect(use("foo")).toBe(123);
   });
 
   it("disallows registering services twice", () => {
@@ -238,7 +233,7 @@ describe("env", () => {
 
     registerService("singleton", SomeService);
     expect(() => registerService("scoped", SomeService)).toThrowError("Service 'SomeService' is already registered");
-    expect(useService(SomeService)).toBeInstanceOf(SomeService);
+    expect(use(SomeService)).toBeInstanceOf(SomeService);
   });
 
   it("allows two different services with the same name", () => {
@@ -279,8 +274,8 @@ describe("env", () => {
 
     registerService("singleton", service1);
 
-    const instance1 = useService(service1);
-    const instance2 = useService(service2);
+    const instance1 = use(service1);
+    const instance2 = use(service2);
 
     expect(instance1).toBe(instance2);
     expect(instance1).toBeInstanceOf(service1);
@@ -293,18 +288,18 @@ describe("env", () => {
     class A {
       constructor() {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        useService(B);
+        use(B);
       }
     }
     class B {
       constructor() {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        useService(C);
+        use(C);
       }
     }
     class C {
       constructor() {
-        useService(A);
+        use(A);
       }
     }
 
@@ -312,6 +307,6 @@ describe("env", () => {
     registerService("transient", B);
     registerService("transient", C);
 
-    expect(() => useService(A)).toThrowError("Cyclic service dependency on constructor: 'A' -> 'B' -> 'C' -> 'A'");
+    expect(() => use(A)).toThrowError("Cyclic service dependency on constructor: 'A' -> 'B' -> 'C' -> 'A'");
   });
 });

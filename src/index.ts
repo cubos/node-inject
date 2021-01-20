@@ -36,7 +36,7 @@ export function registerService<T extends ServiceType>(lifetime: ServiceLifetime
   globalContext.setService(type.name, { type, factory: () => new type(...(ctorArgs as unknown[])), lifetime });
 }
 
-export function useService<T extends ServiceType>(type: T): InstanceType<T> {
+function useService<T extends ServiceType>(type: T): InstanceType<T> {
   const service = globalContext.getService(type.name);
 
   if (!service) {
@@ -82,25 +82,7 @@ export function useService<T extends ServiceType>(type: T): InstanceType<T> {
   }
 }
 
-export function registerValue<NameT extends keyof UseValueTypeMapInternal>(name: NameT, value: UseValueTypeMapInternal[NameT]) {
-  if (globalContext.hasValue(name)) {
-    throw new Error(`Value '${name}' is already registered`);
-  }
-
-  globalContext.setValue(name, value);
-}
-
-export function registerScopedValue<NameT extends keyof UseValueTypeMapInternal>(name: NameT, value: UseValueTypeMapInternal[NameT]) {
-  const scopeContext = scopeContextAsyncStorage.getStore();
-
-  if (!scopeContext) {
-    throw new Error(`Scoped value '${name}' can't be registered outside a scope`);
-  }
-
-  scopeContext.setValue(name, value);
-}
-
-export function useValue<NameT extends keyof UseValueTypeMapInternal>(name: NameT): UseValueTypeMapInternal[NameT] {
+function useValue<NameT extends keyof UseValueTypeMapInternal>(name: NameT): UseValueTypeMapInternal[NameT] {
   const scopeContext = scopeContextAsyncStorage.getStore();
 
   if (scopeContext?.hasValue(name)) {
@@ -114,6 +96,43 @@ export function useValue<NameT extends keyof UseValueTypeMapInternal>(name: Name
   }
 
   throw new Error(`Value '${name}' is not registered`);
+}
+
+export const use = ((serviceOrValue: ServiceType | string) => {
+  return typeof serviceOrValue === "string" ? useValue(serviceOrValue) : useService(serviceOrValue);
+}) as {
+  <T extends ServiceType>(type: T): InstanceType<T>;
+  <NameT extends keyof UseValueTypeMapInternal>(name: NameT): UseValueTypeMapInternal[NameT];
+} & UseValueTypeMapInternal;
+
+export function registerValue<NameT extends keyof UseValueTypeMapInternal>(name: NameT, value: UseValueTypeMapInternal[NameT]) {
+  if (globalContext.hasValue(name)) {
+    throw new Error(`Value '${name}' is already registered`);
+  }
+
+  if (!use.hasOwnProperty(name)) {
+    Object.defineProperty(use, name, {
+      get: () => useValue(name),
+    });
+  }
+
+  globalContext.setValue(name, value);
+}
+
+export function registerScopedValue<NameT extends keyof UseValueTypeMapInternal>(name: NameT, value: UseValueTypeMapInternal[NameT]) {
+  const scopeContext = scopeContextAsyncStorage.getStore();
+
+  if (!scopeContext) {
+    throw new Error(`Scoped value '${name}' can't be registered outside a scope`);
+  }
+
+  if (!use.hasOwnProperty(name)) {
+    Object.defineProperty(use, name, {
+      get: () => useValue(name),
+    });
+  }
+
+  scopeContext.setValue(name, value);
 }
 
 type UseValueTypeMapInternal = {} extends UseValueTypeMap ? Record<string, unknown> : UseValueTypeMap;
