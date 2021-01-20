@@ -138,6 +138,11 @@ describe("env", () => {
 
       expect(use("foo")).toBe(value2);
       expect(use.foo).toBe(value2);
+
+      setupScope(() => {
+        expect(use("foo")).toBe(value2);
+        expect(use.foo).toBe(value2);
+      });
     });
 
     expect(() => registerScopedValue("foo", value1)).toThrowError("Scoped value 'foo' can't be registered outside a scope");
