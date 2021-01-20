@@ -241,7 +241,7 @@ describe("env", () => {
     expect(useService(SomeService)).toBeInstanceOf(SomeService);
   });
 
-  it("allows two services with the same name", () => {
+  it("allows two different services with the same name", () => {
     const service1 = (() => {
       return class Service {
         public id = 1;
@@ -258,15 +258,35 @@ describe("env", () => {
     expect(service2.name).toBe("Service");
 
     registerService("singleton", service1);
-    registerService("singleton", service2);
+    expect(() => registerService("singleton", service2)).toThrowError("Service 'Service' is already registered");
+  });
 
-    expect(useService(service1)).toBeInstanceOf(service1);
-    expect(useService(service1)).not.toBeInstanceOf(service2);
-    expect(useService(service1).id).toBe(1);
+  it("obtains services by name", () => {
+    const service1 = (() => {
+      return class Service {
+        public id = 1;
+      };
+    })();
 
-    expect(useService(service2)).toBeInstanceOf(service2);
-    expect(useService(service2)).not.toBeInstanceOf(service1);
-    expect(useService(service2).id).toBe(2);
+    const service2 = (() => {
+      return class Service {
+        public id = 2;
+      };
+    })();
+
+    expect(service1.name).toBe("Service");
+    expect(service2.name).toBe("Service");
+
+    registerService("singleton", service1);
+
+    const instance1 = useService(service1);
+    const instance2 = useService(service2);
+
+    expect(instance1).toBe(instance2);
+    expect(instance1).toBeInstanceOf(service1);
+    expect(instance2).toBeInstanceOf(service1);
+    expect(instance1.id).toBe(1);
+    expect(instance2.id).toBe(1);
   });
 
   it("detects cyclic dependency on service construction", () => {

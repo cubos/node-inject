@@ -29,15 +29,15 @@ export function setupScope<T>(fn: () => T) {
 }
 
 export function registerService<T extends ServiceType>(lifetime: ServiceLifetime, type: T, ...ctorArgs: ConstructorParameters<T>) {
-  if (globalContext.hasService(type)) {
+  if (globalContext.hasService(type.name)) {
     throw new Error(`Service '${type.name}' is already registered`);
   }
 
-  globalContext.setService(type, { type, factory: () => new type(...(ctorArgs as unknown[])), lifetime });
+  globalContext.setService(type.name, { type, factory: () => new type(...(ctorArgs as unknown[])), lifetime });
 }
 
 export function useService<T extends ServiceType>(type: T): InstanceType<T> {
-  const service = globalContext.getService(type);
+  const service = globalContext.getService(type.name);
 
   if (!service) {
     throw new Error(`Service '${type.name}' is not registered`);
@@ -54,25 +54,25 @@ export function useService<T extends ServiceType>(type: T): InstanceType<T> {
         throw new Error(`Scoped service '${type.name}' can't be used outside a scope`);
       }
 
-      if (scopeContext.hasServiceInstance(type)) {
-        return scopeContext.getServiceInstance(type) as InstanceType<T>;
+      if (scopeContext.hasServiceInstance(type.name)) {
+        return scopeContext.getServiceInstance(type.name) as InstanceType<T>;
       }
 
       const newInstance = createServiceInstance(service) as InstanceType<T>;
 
-      scopeContext.setServiceInstance(type, newInstance);
+      scopeContext.setServiceInstance(type.name, newInstance);
 
       return newInstance;
     }
 
     case "singleton": {
-      if (globalContext.hasSingleton(type)) {
-        return globalContext.getSingleton(type) as InstanceType<T>;
+      if (globalContext.hasSingleton(type.name)) {
+        return globalContext.getSingleton(type.name) as InstanceType<T>;
       }
 
       const newInstance = createServiceInstance(service) as InstanceType<T>;
 
-      globalContext.setSingleton(type, newInstance);
+      globalContext.setSingleton(type.name, newInstance);
 
       return newInstance;
     }

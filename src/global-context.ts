@@ -3,34 +3,34 @@ import type { Service } from "./service";
 export class GlobalContext {
   constructor(public readonly parent?: GlobalContext) {}
 
-  private readonly services = new Map<Function, Service>();
+  private readonly services = new Map<string, Service>();
 
-  private readonly singletons = new Map<Function, unknown>();
+  private readonly singletons = new Map<string, unknown>();
 
   private readonly values = new Map<string, unknown>();
 
-  getService(constructor: Function): Service | undefined {
-    return this.services.get(constructor) ?? this.parent?.getService(constructor);
+  getService(name: string): Service | undefined {
+    return this.services.get(name) ?? this.parent?.getService(name);
   }
 
-  hasService(constructor: Function): boolean {
-    return this.services.has(constructor) || (this.parent?.hasService(constructor) ?? false);
+  hasService(name: string): boolean {
+    return this.services.has(name) || (this.parent?.hasService(name) ?? false);
   }
 
-  setService(constructor: Function, value: Service) {
-    this.services.set(constructor, value);
+  setService(name: string, value: Service) {
+    this.services.set(name, value);
   }
 
-  getSingleton(constructor: Function): unknown {
-    return this.singletons.has(constructor) ? this.singletons.get(constructor) : this.parent?.getSingleton(constructor);
+  getSingleton(name: string): unknown {
+    return this.singletons.has(name) ? this.singletons.get(name) : this.parent?.getSingleton(name);
   }
 
-  hasSingleton(constructor: Function): boolean {
-    return this.singletons.has(constructor) || (this.parent?.hasSingleton(constructor) ?? false);
+  hasSingleton(name: string): boolean {
+    return this.singletons.has(name) || (this.parent?.hasSingleton(name) ?? false);
   }
 
-  setSingleton(constructor: Function, value: unknown) {
-    this.singletons.set(constructor, value);
+  setSingleton(name: string, value: unknown) {
+    this.singletons.set(name, value);
   }
 
   getValue(name: string): unknown {

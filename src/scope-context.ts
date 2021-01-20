@@ -1,20 +1,20 @@
 export class ScopeContext {
   constructor(public readonly parent?: ScopeContext) {}
 
-  private readonly serviceInstances = new Map<Function, unknown>();
+  private readonly serviceInstances = new Map<string, unknown>();
 
   private readonly values = new Map<string, unknown>();
 
-  getServiceInstance(constructor: Function): unknown {
-    return this.serviceInstances.has(constructor) ? this.serviceInstances.get(constructor) : this.parent?.getServiceInstance(constructor);
+  getServiceInstance(name: string): unknown {
+    return this.serviceInstances.has(name) ? this.serviceInstances.get(name) : this.parent?.getServiceInstance(name);
   }
 
-  hasServiceInstance(constructor: Function): boolean {
-    return this.serviceInstances.has(constructor) || (this.parent?.hasServiceInstance(constructor) ?? false);
+  hasServiceInstance(name: string): boolean {
+    return this.serviceInstances.has(name) || (this.parent?.hasServiceInstance(name) ?? false);
   }
 
-  setServiceInstance(constructor: Function, value: unknown) {
-    this.serviceInstances.set(constructor, value);
+  setServiceInstance(name: string, value: unknown) {
+    this.serviceInstances.set(name, value);
   }
 
   getValue(name: string): unknown {
