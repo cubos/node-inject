@@ -7,7 +7,7 @@
     "test": "jest",
     "eslint:fix": "eslint --fix '{src,spec}/**/*.ts'",
     "eslint:check": "eslint '{src,spec}/**/*.ts'",
-    "build": "tsc && cp src/use.d.ts dist/"
+    "build": "tsc && cp src/use.d.ts dist/src/"
   },
   "keywords": [],
   "license": "MIT",
