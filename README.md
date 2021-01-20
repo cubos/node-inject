@@ -90,7 +90,7 @@ class CoolIntegrationService {
 registerService("transient", CoolIntegrationService, axios.create(), env.COOL_API_KEY);
 ```
 
-## `useService(class)`
+## `use(class)`
 
 This function can be called from anywhere (including from the constructor of a service) to obtain an instance of a service ready to use. The lifetime of the service is handled behind the scenes.
 
@@ -102,17 +102,17 @@ class UserInformationService {
 }
 
 class FeatureFlagService {
-  dbConnection = useService(DatabaseConnectionService);
+  dbConnection = use(DatabaseConnectionService);
 
   constructor() {
-    const userId = useService(UserInformationService).userId;
+    const userId = use(UserInformationService).userId;
   }
 }
 ```
 
-The intended use is to call `useService` from your controllers to obtain services and interact with them. Member functions of services can call `useService` themselves as well. If the service is scoped, you must be inside a scope to use it.
+The intended use is to call `use` from your controllers to obtain services and interact with them. Member functions of services can call `use` themselves as well. If the service is scoped, you must be inside a scope to use it.
 
-## `registerValue(name, value)` and `useValue(name)`
+## `registerValue(name, value)` and `use(name)`
 
 Not everything is a service. Maybe you have a stand alone function or some data you want to share. For this `registerValue` can be used.
 
@@ -121,21 +121,24 @@ registerValue("dbConnection", pool);
 registerValue("handleError", err => console.error(err));
 ```
 
-Those values can be later used with `useValue`:
+Those values can be later used with `use`:
 
 ```typescript
-useValue("dbConnection").query("SELECT 1+2");
-useValue("handleError")(new Error("failed"));
+use("dbConnection").query("SELECT 1+2");
+use("handleError")(new Error("failed"));
+// Or:
+use.dbConnection.query("SELECT 1+2");
+use.handleError(new Error("failed"));
 ```
 
-By default the return of `useValue` is typed as `unknown`, but you can provide a custom typing to improve your experience. You can change to you strict typing by adding the following to your project:
+By default the return of `use` is typed as `unknown`, but you can provide a custom typing to improve your experience. You can change to you strict typing by adding the following to your project:
 
 ```typescript
 // This must be a .d.ts file
 import type { ConnectionPool } from "some-package";
 
 module "@cubos/inject" {
-  export interface UseValueTypeMap {
+  export interface UseTypeMap {
     dbConnection: ConnectionPool;
     handleError(err: Error): void;
   }
@@ -144,14 +147,14 @@ module "@cubos/inject" {
 
 ## `registerScopedValue(name, value)`
 
-Similar to `registerValue`, `registerScopedValue` can be used to register values to be consumed with `useValue`. But they will only be available within the same scope.
+Similar to `registerValue`, `registerScopedValue` can be used to register values to be consumed with `use`. But they will only be available within the same scope.
 
 # Test Setup
 
 The goal of this library is to make dependency injection during unit tests easy. This is our suggested architecture:
 
-1. Create your service classes and values. They can `useService` and `useValue` freely, but they should not register themselves.
-2. Create your controllers and routes consuming those services with `useService`.
+1. Create your service classes and values. They can `use` freely, but they should not register themselves.
+2. Create your controllers and routes consuming those services with `use`.
 3. Create your application entry point file. This is the only file that won't be tested. It should register all services and start the application server.
 4. Create a test setup file. Assuming Jest, you should pass this file as `setupFilesAfterEnv` on jest config. It should have a `beforeAll` that can register some default mock or services/values that all tests can use. Then it must call the following:
 

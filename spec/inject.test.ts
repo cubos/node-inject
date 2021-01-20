@@ -199,6 +199,8 @@ describe("env", () => {
     registerValue("foo", 123);
 
     expect(use("foo")).toBe(123);
+    expect(() => use("bar")).toThrowError("Value 'bar' is not registered");
+    expect(() => use.bar).toThrowError("Value 'bar' is not registered");
 
     pushInjectionContext();
     try {
