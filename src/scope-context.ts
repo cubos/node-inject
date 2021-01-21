@@ -20,7 +20,25 @@ export class ScopeContext {
   }
 
   getValue(name: string): unknown {
-    return this.values.has(name) ? this.values.get(name) : this.parent?.getValue(name);
+    if (this.values.has(name)) {
+      return this.values.get(name);
+    }
+
+    if (this.parent?.hasValue(name)) {
+      const value = this.parent.getValue(name);
+
+      if (value) {
+        this.values.set(name, value);
+      }
+
+      return value;
+    }
+
+    return undefined;
+  }
+
+  hasValueSkipParent(name: string): boolean {
+    return this.values.has(name);
   }
 
   hasValue(name: string): boolean {

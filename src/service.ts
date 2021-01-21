@@ -37,7 +37,7 @@ function createServiceInstance(service: Service) {
 }
 
 export function registerService<T extends ServiceType>(lifetime: ServiceLifetime, type: T, ...ctorArgs: ConstructorParameters<T>) {
-  if (getGlobalContext().hasService(type.name)) {
+  if (getGlobalContext().hasServiceSkipParent(type.name)) {
     throw new Error(`Service '${type.name}' is already registered`);
   }
 
@@ -74,13 +74,21 @@ export function useService<T extends ServiceType>(type: T): InstanceType<T> {
     }
 
     case "singleton": {
-      if (getGlobalContext().hasSingleton(type.name)) {
-        return getGlobalContext().getSingleton(type.name) as InstanceType<T>;
+      if (getGlobalContext().hasSingletonInstanceSkipParent(type.name)) {
+        return getGlobalContext().getSingletonInstance(type.name) as InstanceType<T>;
+      }
+
+      if (getGlobalContext().hasSingletonInstance(type.name)) {
+        const instance = getGlobalContext().getSingletonInstance(type.name);
+
+        if (instance instanceof service.type) {
+          return instance as InstanceType<T>;
+        }
       }
 
       const newInstance = createServiceInstance(service) as InstanceType<T>;
 
-      getGlobalContext().setSingleton(type.name, newInstance);
+      getGlobalContext().setSingletonInstance(type.name, newInstance);
 
       return newInstance;
     }

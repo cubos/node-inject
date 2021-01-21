@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import { popInjectionContext, pushInjectionContext, registerValue, registerScopedValue, registerService, setupScope, use } from "../src";
 
 describe("env", () => {
@@ -315,5 +316,99 @@ describe("env", () => {
     registerService("transient", C);
 
     expect(() => use(A)).toThrowError("Cyclic service dependency on constructor: 'A' -> 'B' -> 'C' -> 'A'");
+  });
+
+  it("allows a service to be registered again inside a inner injection context", () => {
+    class A {
+      id = 1;
+    }
+
+    registerService("transient", A);
+
+    expect(use(A).id).toBe(1);
+
+    pushInjectionContext();
+    try {
+      registerService(
+        "transient",
+        class A {
+          id = 2;
+        },
+      );
+
+      expect(use(A).id).toBe(2);
+    } finally {
+      popInjectionContext();
+    }
+
+    expect(use(A).id).toBe(1);
+  });
+
+  it("disallows a service to be registered again inside a inner injection context if it has already been used", () => {
+    class A {
+      id = 1;
+    }
+
+    registerService("transient", A);
+
+    expect(use(A).id).toBe(1);
+
+    pushInjectionContext();
+    try {
+      expect(use(A).id).toBe(1);
+
+      expect(() =>
+        registerService(
+          "transient",
+          class A {
+            id = 2;
+          },
+        ),
+      ).toThrowError("Service 'A' is already registered");
+
+      expect(use(A).id).toBe(1);
+    } finally {
+      popInjectionContext();
+    }
+
+    expect(use(A).id).toBe(1);
+  });
+
+  it("only create new singleton instance if needed, in case the service it registered again in a inner context", () => {
+    class A {
+      id = 1;
+    }
+
+    registerService("singleton", A);
+
+    const instance = use(A);
+
+    expect(instance.id).toBe(1);
+
+    pushInjectionContext();
+    try {
+      registerService(
+        "singleton",
+        class A {
+          id = 2;
+        },
+      );
+
+      const innerInstance = use(A);
+
+      expect(innerInstance.id).toBe(2);
+    } finally {
+      popInjectionContext();
+    }
+
+    pushInjectionContext();
+    try {
+      const innerInstance = use(A);
+
+      expect(innerInstance.id).toBe(1);
+      expect(innerInstance).toBe(instance);
+    } finally {
+      popInjectionContext();
+    }
   });
 });

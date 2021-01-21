@@ -19,7 +19,7 @@ export function useValue<NameT extends keyof UseTypeMapInternal>(name: NameT): U
 }
 
 export function registerValue<NameT extends keyof UseTypeMapInternal>(name: NameT, value: UseTypeMapInternal[NameT]) {
-  if (getGlobalContext().hasValue(name)) {
+  if (getGlobalContext().hasValueSkipParent(name)) {
     throw new Error(`Value '${name}' is already registered`);
   }
 
@@ -31,6 +31,10 @@ export function registerScopedValue<NameT extends keyof UseTypeMapInternal>(name
 
   if (!scopeContext) {
     throw new Error(`Scoped value '${name}' can't be registered outside a scope`);
+  }
+
+  if (scopeContext.hasValueSkipParent(name)) {
+    throw new Error(`Value '${name}' is already registered`);
   }
 
   scopeContext.setValue(name, value);

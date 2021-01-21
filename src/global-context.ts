@@ -5,36 +5,84 @@ export class GlobalContext {
 
   private readonly services = new Map<string, Service>();
 
-  private readonly singletons = new Map<string, unknown>();
+  private readonly singletonInstances = new Map<string, unknown>();
 
   private readonly values = new Map<string, unknown>();
 
   getService(name: string): Service | undefined {
-    return this.services.get(name) ?? this.parent?.getService(name);
+    let service = this.services.get(name);
+
+    if (service) {
+      return service;
+    }
+
+    service = this.parent?.getService(name);
+
+    if (service) {
+      this.services.set(name, service);
+    }
+
+    return service;
   }
 
-  hasService(name: string): boolean {
-    return this.services.has(name) || (this.parent?.hasService(name) ?? false);
+  hasServiceSkipParent(name: string): boolean {
+    return this.services.has(name);
   }
 
   setService(name: string, value: Service) {
     this.services.set(name, value);
   }
 
-  getSingleton(name: string): unknown {
-    return this.singletons.has(name) ? this.singletons.get(name) : this.parent?.getSingleton(name);
+  getSingletonInstance(name: string): unknown {
+    if (this.singletonInstances.has(name)) {
+      return this.singletonInstances.get(name);
+    }
+
+    if (this.parent?.hasSingletonInstance(name)) {
+      const singletonInstance = this.parent.getSingletonInstance(name);
+
+      if (singletonInstance) {
+        this.singletonInstances.set(name, singletonInstance);
+      }
+
+      return singletonInstance;
+    }
+
+    return undefined;
   }
 
-  hasSingleton(name: string): boolean {
-    return this.singletons.has(name) || (this.parent?.hasSingleton(name) ?? false);
+  hasSingletonInstanceSkipParent(name: string): boolean {
+    return this.singletonInstances.has(name);
   }
 
-  setSingleton(name: string, value: unknown) {
-    this.singletons.set(name, value);
+  hasSingletonInstance(name: string): boolean {
+    return this.singletonInstances.has(name) || (this.parent?.hasSingletonInstance(name) ?? false);
+  }
+
+  setSingletonInstance(name: string, value: unknown) {
+    this.singletonInstances.set(name, value);
   }
 
   getValue(name: string): unknown {
-    return this.values.has(name) ? this.values.get(name) : this.parent?.getValue(name);
+    if (this.values.has(name)) {
+      return this.values.get(name);
+    }
+
+    if (this.parent?.hasValue(name)) {
+      const value = this.parent.getValue(name);
+
+      if (value) {
+        this.values.set(name, value);
+      }
+
+      return value;
+    }
+
+    return undefined;
+  }
+
+  hasValueSkipParent(name: string): boolean {
+    return this.values.has(name);
   }
 
   hasValue(name: string): boolean {
