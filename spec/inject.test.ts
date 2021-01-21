@@ -101,16 +101,16 @@ describe("env", () => {
       setupScope(() => {
         const instance3 = use(TestService);
 
-        expect(instance1).toBe(instance3);
+        expect(instance3).not.toBe(instance1);
       });
     });
 
-    setupScope(() => {
-      expect(constructorCalledTimes).toBe(1);
+    expect(constructorCalledTimes).toBe(2);
 
+    setupScope(() => {
       use(TestService);
 
-      expect(constructorCalledTimes).toBe(2);
+      expect(constructorCalledTimes).toBe(3);
     });
   });
 

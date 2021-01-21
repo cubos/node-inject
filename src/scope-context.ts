@@ -8,11 +8,11 @@ export class ScopeContext {
   private readonly values = new Map<string, unknown>();
 
   getServiceInstance(name: string): unknown {
-    return this.serviceInstances.has(name) ? this.serviceInstances.get(name) : this.parent?.getServiceInstance(name);
+    return this.serviceInstances.get(name);
   }
 
   hasServiceInstance(name: string): boolean {
-    return this.serviceInstances.has(name) || (this.parent?.hasServiceInstance(name) ?? false);
+    return this.serviceInstances.has(name);
   }
 
   setServiceInstance(name: string, value: unknown) {
