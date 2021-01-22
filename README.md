@@ -42,7 +42,7 @@ The concept of "scope" can vary depending on the framework, but here we call "sc
 
 You are not required to setup a scope if you are not going to use scoped services or values.
 
-## `registerService(lifetime, class)`
+## `registerService(lifetime, class, ...args)` and `registerServiceWithFactory(lifetime, class, factory)`
 
 Registers a new service with the specified lifetime.
 
@@ -88,6 +88,12 @@ class CoolIntegrationService {
 }
 
 registerService("transient", CoolIntegrationService, axios.create(), env.COOL_API_KEY);
+```
+
+If you need some custom construction logic and for some reason the class constructor can't be used for that, you can use `registerServiceWithFactory`. This function will be called only when needed.
+
+```typescript
+registerServiceWithFactory("singleton", SomeService, () => SomeService.getInstance());
 ```
 
 ## `use(class)`

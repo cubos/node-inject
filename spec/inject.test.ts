@@ -1,5 +1,14 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import { popInjectionContext, pushInjectionContext, registerValue, registerScopedValue, registerService, setupScope, use } from "../src";
+import {
+  popInjectionContext,
+  pushInjectionContext,
+  registerValue,
+  registerScopedValue,
+  registerService,
+  setupScope,
+  use,
+  registerServiceWithFactory,
+} from "../src";
 
 describe("env", () => {
   beforeEach(pushInjectionContext);
@@ -410,5 +419,25 @@ describe("env", () => {
     } finally {
       popInjectionContext();
     }
+  });
+
+  it("allow registering a service with a custom factory function", () => {
+    class A {
+      id = 0;
+    }
+
+    const factory = jest.fn(() => {
+      const instance = new A();
+
+      instance.id = 1;
+
+      return instance;
+    });
+
+    registerServiceWithFactory("singleton", A, factory);
+
+    expect(use(A)).toBeInstanceOf(A);
+    expect(use(A).id).toBe(1);
+    expect(factory).toBeCalledTimes(1);
   });
 });

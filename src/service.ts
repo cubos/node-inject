@@ -36,12 +36,16 @@ function createServiceInstance(service: Service) {
   }
 }
 
-export function registerService<T extends ServiceType>(lifetime: ServiceLifetime, type: T, ...ctorArgs: ConstructorParameters<T>) {
+export function registerServiceWithFactory<T extends ServiceType>(lifetime: ServiceLifetime, type: T, factory: () => InstanceType<T>) {
   if (getGlobalContext().hasServiceSkipParent(type.name)) {
     throw new Error(`Service '${type.name}' is already registered`);
   }
 
-  getGlobalContext().setService(type.name, { type, factory: () => new type(...(ctorArgs as unknown[])), lifetime });
+  getGlobalContext().setService(type.name, { type, factory, lifetime });
+}
+
+export function registerService<T extends ServiceType>(lifetime: ServiceLifetime, type: T, ...ctorArgs: ConstructorParameters<T>) {
+  registerServiceWithFactory(lifetime, type, () => new type(...(ctorArgs as unknown[])));
 }
 
 export function useService<T extends ServiceType>(type: T): InstanceType<T> {
