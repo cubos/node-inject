@@ -1,6 +1,10 @@
+import { randomBytes } from "crypto";
+
 import type { Service } from "./service";
 
 export class GlobalContext {
+  id = randomBytes(32).toString("hex");
+
   constructor(public readonly parent?: GlobalContext) {}
 
   private readonly services = new Map<string, Service>();

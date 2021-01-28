@@ -62,17 +62,13 @@ export function useService<T extends ServiceType>(type: T): InstanceType<T> {
     case "scoped": {
       const scopeContext = getCurrentScope();
 
-      if (!scopeContext) {
-        throw new Error(`Scoped service '${type.name}' can't be used outside a scope`);
-      }
-
-      if (scopeContext.hasServiceInstance(type.name)) {
-        return scopeContext.getServiceInstance(type.name) as InstanceType<T>;
+      if (scopeContext.hasServiceInstance(getGlobalContext().id + type.name)) {
+        return scopeContext.getServiceInstance(getGlobalContext().id + type.name) as InstanceType<T>;
       }
 
       const newInstance = createServiceInstance(service) as InstanceType<T>;
 
-      scopeContext.setServiceInstance(type.name, newInstance);
+      scopeContext.setServiceInstance(getGlobalContext().id + type.name, newInstance);
 
       return newInstance;
     }

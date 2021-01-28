@@ -3,11 +3,9 @@ import { getCurrentScope } from "./scope-context";
 import type { UseTypeMapInternal } from "./use";
 
 export function useValue<NameT extends keyof UseTypeMapInternal>(name: NameT): UseTypeMapInternal[NameT] {
-  const scopeContext = getCurrentScope();
-
-  if (scopeContext?.hasValue(name)) {
+  if (getCurrentScope().hasValue(getGlobalContext().id + name)) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    return scopeContext.getValue(name) as UseTypeMapInternal[NameT];
+    return getCurrentScope().getValue(getGlobalContext().id + name) as UseTypeMapInternal[NameT];
   }
 
   if (getGlobalContext().hasValue(name)) {
@@ -27,15 +25,9 @@ export function registerValue<NameT extends keyof UseTypeMapInternal>(name: Name
 }
 
 export function registerScopedValue<NameT extends keyof UseTypeMapInternal>(name: NameT, value: UseTypeMapInternal[NameT]) {
-  const scopeContext = getCurrentScope();
-
-  if (!scopeContext) {
-    throw new Error(`Scoped value '${name}' can't be registered outside a scope`);
-  }
-
-  if (scopeContext.hasValueSkipParent(name)) {
+  if (getCurrentScope().hasValueSkipParent(getGlobalContext().id + name)) {
     throw new Error(`Value '${name}' is already registered`);
   }
 
-  scopeContext.setValue(name, value);
+  getCurrentScope().setValue(getGlobalContext().id + name, value);
 }

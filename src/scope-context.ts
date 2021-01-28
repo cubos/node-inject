@@ -52,8 +52,10 @@ export class ScopeContext {
 
 const scopeContextAsyncStorage = new AsyncLocalStorage<ScopeContext>();
 
+scopeContextAsyncStorage.enterWith(new ScopeContext());
+
 export function getCurrentScope() {
-  return scopeContextAsyncStorage.getStore();
+  return scopeContextAsyncStorage.getStore() as ScopeContext;
 }
 
 export function setupScope<T>(fn: () => T) {

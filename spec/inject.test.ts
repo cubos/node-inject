@@ -10,7 +10,7 @@ import {
   registerServiceWithFactory,
 } from "../src";
 
-describe("env", () => {
+describe("inject", () => {
   beforeEach(pushInjectionContext);
   afterEach(popInjectionContext);
 
@@ -93,33 +93,36 @@ describe("env", () => {
 
     expect(constructorCalledTimes).toBe(0);
 
-    expect(() => use(TestService)).toThrowError("Scoped service 'TestService' can't be used outside a scope");
+    const instance1 = use(TestService);
+
+    expect(instance1).toBeInstanceOf(TestService);
 
     setupScope(() => {
-      expect(constructorCalledTimes).toBe(0);
-
-      const instance1 = use(TestService);
-      const instance2 = use(TestService);
-
       expect(constructorCalledTimes).toBe(1);
-      expect(instance1).toBeInstanceOf(TestService);
+
+      const instance2 = use(TestService);
+      const instance3 = use(TestService);
+
+      expect(constructorCalledTimes).toBe(2);
       expect(instance2).toBeInstanceOf(TestService);
-      expect(instance1.id).toBe(instance2.id);
-      expect(instance1).toBe(instance2);
+      expect(instance3).toBeInstanceOf(TestService);
+      expect(instance2.id).toBe(instance3.id);
+      expect(instance2).toBe(instance3);
 
       setupScope(() => {
-        const instance3 = use(TestService);
+        const instance4 = use(TestService);
 
-        expect(instance3).not.toBe(instance1);
+        expect(instance4).not.toBe(instance1);
+        expect(instance4).not.toBe(instance2);
       });
     });
 
-    expect(constructorCalledTimes).toBe(2);
+    expect(constructorCalledTimes).toBe(3);
 
     setupScope(() => {
       use(TestService);
 
-      expect(constructorCalledTimes).toBe(3);
+      expect(constructorCalledTimes).toBe(4);
     });
   });
 
@@ -135,6 +138,7 @@ describe("env", () => {
   it("registers a scoped value", () => {
     const value1 = Math.random();
     const value2 = Math.random();
+    const value3 = Math.random();
 
     setupScope(() => {
       registerScopedValue("foo", value1);
@@ -155,7 +159,10 @@ describe("env", () => {
       });
     });
 
-    expect(() => registerScopedValue("foo", value1)).toThrowError("Scoped value 'foo' can't be registered outside a scope");
+    expect(() => use.foo).toThrowError("Value 'foo' is not registered");
+    registerScopedValue("foo", value3);
+    expect(use("foo")).toBe(value3);
+    expect(use.foo).toBe(value3);
   });
 
   it("can pop global context to release singleton instances", () => {
