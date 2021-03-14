@@ -22,14 +22,13 @@
     "access": "public"
   },
   "homepage": "https://github.com/cubos/node-inject#readme",
-  "dependencies": {},
   "devDependencies": {
-    "@cubos/eslint-config": "^1.0.442740",
-    "@types/node": "^14.14.21",
-    "jest-extended": "^0.11.5",
+    "@cubos/eslint-config": "^1.0.480297",
+    "@types/node": "^14.14.34",
     "jest": "^26.6.3",
-    "ts-jest": "^26.4.4",
-    "typescript": "^4.1.3"
+    "jest-extended": "^0.11.5",
+    "ts-jest": "^26.5.3",
+    "typescript": "^4.2.3"
   },
   "jest": {
     "preset": "ts-jest",
@@ -50,5 +49,10 @@
     "setupFilesAfterEnv": [
       "jest-extended"
     ]
+  },
+  "dependencies": {
+    "axios": "^0.21.1",
+    "axios-retry": "^3.1.9",
+    "superjson": "^1.7.2"
   }
 }

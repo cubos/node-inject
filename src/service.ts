@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { getGlobalContext } from "./global-context";
+import type { RemoteServiceConfig } from "./remote";
+import { createRemoteServiceInstance } from "./remote";
 import { getCurrentScope } from "./scope-context";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ServiceType = new (...args: any) => any;
-export type ServiceLifetime = "singleton" | "scoped" | "transient";
+export type ServiceLifetime = "singleton" | "scoped" | "transient" | "remote";
 
 export interface Service {
   type: ServiceType;
@@ -44,8 +46,22 @@ export function registerServiceWithFactory<T extends ServiceType>(lifetime: Serv
   getGlobalContext().setService(type.name, { type, factory, lifetime });
 }
 
-export function registerService<T extends ServiceType>(lifetime: ServiceLifetime, type: T, ...ctorArgs: ConstructorParameters<T>) {
-  registerServiceWithFactory(lifetime, type, () => new type(...(ctorArgs as unknown[])));
+export function registerService<T extends ServiceType>(
+  lifetime: "singleton" | "scoped" | "transient",
+  type: T,
+  ...ctorArgs: ConstructorParameters<T>
+): void;
+export function registerService<T extends ServiceType & { isRemote: true }>(lifetime: "remote", type: T, config: RemoteServiceConfig): void;
+export function registerService<T extends ServiceType>(lifetime: ServiceLifetime, type: T, ...ctorArgs: ConstructorParameters<T> | [string]) {
+  if (lifetime === "remote") {
+    registerServiceWithFactory(
+      "singleton",
+      type,
+      () => createRemoteServiceInstance(type as T & { isRemote: true }, (ctorArgs as [RemoteServiceConfig])[0]) as InstanceType<T>,
+    );
+  } else {
+    registerServiceWithFactory(lifetime, type, () => new type(...(ctorArgs as unknown[])));
+  }
 }
 
 export function useService<T extends ServiceType>(type: T): InstanceType<T> {
