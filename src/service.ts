@@ -52,7 +52,11 @@ export function registerService<T extends ServiceType>(
   ...ctorArgs: ConstructorParameters<T>
 ): void;
 export function registerService<T extends ServiceType & { isRemote: true }>(lifetime: "remote", type: T, config: RemoteServiceConfig): void;
-export function registerService<T extends ServiceType>(lifetime: ServiceLifetime, type: T, ...ctorArgs: ConstructorParameters<T> | [string]) {
+export function registerService<T extends ServiceType>(
+  lifetime: ServiceLifetime,
+  type: T,
+  ...ctorArgs: ConstructorParameters<T> | [RemoteServiceConfig]
+) {
   if (lifetime === "remote") {
     registerServiceWithFactory(
       "singleton",
