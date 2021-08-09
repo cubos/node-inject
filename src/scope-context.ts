@@ -55,7 +55,13 @@ const scopeContextAsyncStorage = new AsyncLocalStorage<ScopeContext>();
 scopeContextAsyncStorage.enterWith(new ScopeContext());
 
 export function getCurrentScope() {
-  return scopeContextAsyncStorage.getStore() as ScopeContext;
+  const scopeContext = scopeContextAsyncStorage.getStore();
+
+  if (!scopeContext) {
+    throw new Error("Can't obtain this when not inside a scope. Did you use 'setupScope'?");
+  }
+
+  return scopeContext;
 }
 
 export function setupScope<T>(fn: () => T) {
