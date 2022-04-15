@@ -25,7 +25,7 @@
   "devDependencies": {
     "@cubos/eslint-config": "^1.0.536820",
     "@types/jest": "^26.0.23",
-    "@types/node": "^16.4.7",
+    "@types/node": "^17.0.24",
     "jest": "^27.0.5",
     "jest-extended": "^0.11.5",
     "ts-jest": "^27.0.3",
