@@ -1,19 +1,19 @@
 import { randomBytes } from "crypto";
 
-import type { Service } from "./service";
+import type { ServiceSpec } from "./service";
 
 export class GlobalContext {
   id = randomBytes(32).toString("hex");
 
   constructor(public readonly parent?: GlobalContext) {}
 
-  private readonly services = new Map<string, Service>();
+  private readonly services = new Map<string, ServiceSpec>();
 
   private readonly singletonInstances = new Map<string, unknown>();
 
   private readonly values = new Map<string, unknown>();
 
-  getService(name: string): Service | undefined {
+  getService(name: string): ServiceSpec | undefined {
     let service = this.services.get(name);
 
     if (service) {
@@ -33,7 +33,7 @@ export class GlobalContext {
     return this.services.has(name);
   }
 
-  setService(name: string, value: Service) {
+  setService(name: string, value: ServiceSpec) {
     this.services.set(name, value);
   }
 

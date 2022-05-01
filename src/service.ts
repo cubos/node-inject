@@ -6,7 +6,7 @@ import { getCurrentScope } from "./scope-context";
 export type ServiceType = new (...args: any) => any;
 export type ServiceLifetime = "singleton" | "scoped" | "transient";
 
-export interface Service {
+export interface ServiceSpec {
   type: ServiceType;
   factory(): unknown;
   lifetime: ServiceLifetime;
@@ -15,7 +15,7 @@ export interface Service {
 const serviceConstructionStack: Function[] = [];
 const serviceConstructionLookup = new Set<Function>();
 
-function createServiceInstance(service: Service) {
+function createServiceInstance(service: ServiceSpec) {
   serviceConstructionStack.push(service.type);
 
   if (serviceConstructionLookup.has(service.type)) {
@@ -46,6 +46,13 @@ export function registerServiceWithFactory<T extends ServiceType>(lifetime: Serv
 
 export function registerService<T extends ServiceType>(lifetime: ServiceLifetime, type: T, ...ctorArgs: ConstructorParameters<T>) {
   registerServiceWithFactory(lifetime, type, () => new type(...(ctorArgs as unknown[])));
+}
+
+export function Service(lifetime: ServiceLifetime, factory?: () => unknown) {
+  return <T extends ServiceType>(type: T) => {
+    registerServiceWithFactory(lifetime, type, factory ? factory as () => InstanceType<T> : () => new type());
+    return type;
+  };
 }
 
 export function useService<T extends ServiceType>(type: T): InstanceType<T> {
