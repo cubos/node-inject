@@ -50,7 +50,7 @@ export function registerService<T extends ServiceType>(lifetime: ServiceLifetime
 
 export function Service(lifetime: ServiceLifetime, factory?: () => unknown) {
   return <T extends ServiceType>(type: T) => {
-    registerServiceWithFactory(lifetime, type, factory ? factory as () => InstanceType<T> : () => new type());
+    registerServiceWithFactory(lifetime, type, factory ? (factory as () => InstanceType<T>) : () => new type());
     return type;
   };
 }

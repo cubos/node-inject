@@ -1,13 +1,5 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import {
-  popInjectionContext,
-  pushInjectionContext,
-  registerValue,
-  registerScopedValue,
-  registerService,
-  setupScope,
-  use,
-} from "../src";
+import { popInjectionContext, pushInjectionContext, registerValue, registerScopedValue, registerService, setupScope, use } from "../src";
 import { Service } from "../src/service";
 
 describe("inject", () => {
@@ -429,6 +421,7 @@ describe("inject", () => {
 
   it("allow registering a service with a custom factory function", () => {
     const factory = jest.fn(() => {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       const instance = new A();
 
       instance.id = 1;
