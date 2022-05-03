@@ -1,14 +1,6 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import {
-  popInjectionContext,
-  pushInjectionContext,
-  registerValue,
-  registerScopedValue,
-  registerService,
-  setupScope,
-  use,
-  registerServiceWithFactory,
-} from "../src";
+import { popInjectionContext, pushInjectionContext, registerValue, registerScopedValue, registerService, setupScope, use } from "../src";
+import { Service } from "../src/service";
 
 describe("inject", () => {
   beforeEach(pushInjectionContext);
@@ -52,6 +44,7 @@ describe("inject", () => {
   it("registers a service as transient", () => {
     let constructorCalledTimes = 0;
 
+    @Service("transient")
     class TestService {
       public id = Math.random();
 
@@ -59,8 +52,6 @@ describe("inject", () => {
         constructorCalledTimes++;
       }
     }
-
-    registerService("transient", TestService);
 
     expect(constructorCalledTimes).toBe(0);
 
@@ -429,11 +420,8 @@ describe("inject", () => {
   });
 
   it("allow registering a service with a custom factory function", () => {
-    class A {
-      id = 0;
-    }
-
     const factory = jest.fn(() => {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       const instance = new A();
 
       instance.id = 1;
@@ -441,7 +429,10 @@ describe("inject", () => {
       return instance;
     });
 
-    registerServiceWithFactory("singleton", A, factory);
+    @Service("singleton", factory)
+    class A {
+      id = 0;
+    }
 
     expect(use(A)).toBeInstanceOf(A);
     expect(use(A).id).toBe(1);
