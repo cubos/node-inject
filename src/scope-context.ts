@@ -65,7 +65,7 @@ export function getCurrentScope() {
 }
 
 export function setupScope<T>(fn: () => T) {
-  const scopeContext = new ScopeContext(getCurrentScope());
+  const scopeContext = new ScopeContext(scopeContextAsyncStorage.getStore());
 
   return scopeContextAsyncStorage.run(scopeContext, fn);
 }
