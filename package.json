@@ -24,7 +24,7 @@
   "homepage": "https://github.com/cubos/node-inject#readme",
   "devDependencies": {
     "@cubos/eslint-config": "^1.0.612619",
-    "@types/jest": "^27.4.1",
+    "@types/jest": "^28.1.4",
     "@types/node": "^17.0.30",
     "jest": "^27.5.1",
     "jest-extended": "^2.0.0",
